@@ -24,7 +24,21 @@ def web_search(query):
 
     return "\n---\n".join(context)
 
+def calculate(expression):
+    """
+    【工具】数学计算器
+    输入：数学表达式字符串 (例如 "2 + 2")
+    输出：计算结果
+    """
+    try:
+        # eval 是危险函数，生产环境慎用，但做 Demo 没问题
+        return str(eval(expression))
+    except Exception as e:
+        return f"计算错误：{e}"
+
+
 # --- 单元测试 ---
 if __name__ == "__main__":
     # 写完代码立刻测一下，这是好习惯
-    print(web_search("DeepSeek V3 最新评测"))
+    # print(web_search("DeepSeek V3 最新评测"))
+     print(calculate("2 + 2"))

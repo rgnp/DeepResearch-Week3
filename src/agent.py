@@ -6,7 +6,7 @@ from langchain.agents import create_tool_calling_agent, AgentExecutor
 # from langchain.agents import create_openai_tools_agent, AgentExecutor
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.tools import tool
-from tools import web_search  # 导入你刚才写的搜索工具
+from tools import web_search, calculate  # 导入你刚才写的搜索工具
 
 load_dotenv()
 
@@ -21,6 +21,14 @@ def search_tool(query: str):
     """
     return web_search(query)
 
+@tool
+def calculate_tool(expression: str):
+    """
+    当用户询问数学计算、加减乘除问题时，使用此工具。
+    输入应该是一个可执行的数学表达式，如 '200 * 5'。
+    """
+    return calculate(expression)
+
 # --- 2. 初始化大脑 (LLM) ---
 # 我们使用 DeepSeek，它完美兼容 OpenAI 的 Function Calling 格式
 llm = ChatOpenAI(
@@ -33,7 +41,7 @@ llm = ChatOpenAI(
 # --- 3. 组装 Agent ---
 def get_agent():
     # A. 准备工具箱
-    tools = [search_tool]
+    tools = [search_tool, calculate_tool]
     
     # B. 设计 Prompt (人设)
     # {agent_scratchpad} 是 LangChain 预留的位置，用来存放 "思考-行动-观察" 的中间过程
