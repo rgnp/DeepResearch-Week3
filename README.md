@@ -48,6 +48,50 @@ graph LR
     D -- 返回网页摘要 --> C
     C -- 信息充足 --> E[生成最终研报]
     E --> F[Streamlit 前端展示]
+```
+
+- **大脑 (LLM)**: DeepSeek-V3 (兼容 OpenAI 协议)
+
+- **双手 (Tools)**: Tavily Search API (专为 AI 优化的搜索引擎)
+
+- **编排 (Orchestration)**: LangChain (负责 Prompt 管理和工具调度)
+
+- **前端 (UI)**: Streamlit + StreamlitCallbackHandler (可视化思考过程)
+
+## 💻 核心代码解析
+
+### 1. 定义工具 (The "Hands")
+我们使用 `@tool` 装饰器把普通的 Python 函数变成了 AI 能理解的工具。**Docstring (注释) 非常重要**，AI 靠它来理解何时使用这个工具。
+```python
+@tool
+def search_tool(query: str):
+    """
+    当需要获取实时信息、新闻、具体数据或你不知道的知识时，使用此工具。
+    输入应该是具体的搜索关键词。
+    """
+    return web_search(query)
+```
+
+### 2. 组装智能体 (The "Brain")
+使用 LangChain 的 `create_tool_calling_agent` 将 LLM、工具箱和 Prompt 结合在一起。
+```python
+# 核心逻辑：让 LLM 知道它有哪些工具可以用
+agent = create_tool_calling_agent(llm, tools, prompt)
+
+# 执行器：负责 "思考-执行-反馈" 的循环
+agent_executor = AgentExecutor(agent=agent, tools=tools,verbose=True)
+# 🔥 开启 verbose，你能在终端看到它思考的全过程！
+```
+
+### 3. 可视化思考过程
+为了让用户看到 AI 没在偷懒，我们使用了 `StreamlitCallbackHandler`，它能把后台的日志渲染成前端漂亮的折叠框。
+```python
+st_callback = StreamlitCallbackHandler(st.container())
+response = agent_executor.invoke(
+    {"input": prompt},
+    {"callback": [st_callback]} # 注入回调，实现可视化
+)
+```
 
 ## 🚀 运行项目
 
@@ -79,5 +123,5 @@ TAVILY_API_KEY=tvly-xxxxxx
 ```bash
 streamlit run src/app.py
 ```
-
-Created by [RGNP] - A Computer Science Graduate Student exploring AI Engineering.
+---
+> Created by [RGNP] - A Computer Science Graduate Student exploring AI Engineering.
